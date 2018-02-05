@@ -1,0 +1,29 @@
+pod:
+  namespace: hltest
+  name: org1peer0
+  containers:
+  - name: org1peer0
+    image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-org1peer0
+    env:
+    - CORE_PEER_ID=peer0.org1.example.com
+    - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+    - CORE_PEER_LOCALMSPID=Org1MSP
+    # defaults
+    - CORE_LOGGING_LEVEL=DEBUG
+    - CORE_PEER_TLS_ENABLED=true
+    - CORE_PEER_GOSSIP_USELEADERELECTION=true
+    - CORE_PEER_GOSSIP_ORGLEADER=false
+    - CORE_PEER_PROFILE_ENABLED=true
+    - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+    - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+    - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    wd: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command:
+    - peer
+    - node
+    - start
+    expose:
+    - 7051
+    - 7053
+  termination_grace_period: 10

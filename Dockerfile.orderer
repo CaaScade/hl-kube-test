@@ -1,0 +1,14 @@
+FROM hyperledger/fabric-baseos:x86_64-0.4.5
+ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
+RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
+
+COPY orderer/orderer /usr/local/bin
+COPY orderer/sampleconfig $FABRIC_CFG_PATH/
+COPY channel-artifacts/genesis.block /var/hyperledger/orderer/orderer.genesis.block
+COPY crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp /var/hyperledger/orderer/msp
+COPY crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls /var/hyperledger/orderer/tls
+
+EXPOSE 7050
+CMD ["orderer"]
+LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \
+      org.hyperledger.fabric.base.version=0.4.5

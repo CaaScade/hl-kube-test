@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: orderer
+  namespace: hltest
+spec:
+  containers:
+  - command:
+    - orderer
+    env:
+    - name: ORDERER_GENERAL_LOGLEVEL
+      value: debug
+    - name: ORDERER_GENERAL_LISTENADDRESS
+      value: 0.0.0.0
+    - name: ORDERER_GENERAL_GENESISMETHOD
+      value: file
+    - name: ORDERER_GENERAL_GENESISFILE
+      value: /var/hyperledger/orderer/orderer.genesis.block
+    - name: ORDERER_GENERAL_LOCALMSPID
+      value: OrdererMSP
+    - name: ORDERER_GENERAL_LOCALMSPDIR
+      value: /var/hyperledger/orderer/msp
+    - name: ORDERER_GENERAL_TLS_ENABLED
+      value: "true"
+    - name: ORDERER_GENERAL_TLS_PRIVATEKEY
+      value: /var/hyperledger/orderer/tls/server.key
+    - name: ORDERER_GENERAL_TLS_CERTIFICATE
+      value: /var/hyperledger/orderer/tls/server.crt
+    - name: ORDERER_GENERAL_TLS_ROOTCAS
+      value: '[/var/hyperledger/orderer/tls/ca.crt]'
+    image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-orderer
+    name: orderer
+    ports:
+    - containerPort: 7050
+      protocol: TCP
+    resources: {}
+    workingDir: /opt/gopath/src/github.com/hyperledger/fabric
+  terminationGracePeriodSeconds: 10
+

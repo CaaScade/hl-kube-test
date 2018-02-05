@@ -1,0 +1,24 @@
+pod:
+  namespace: hltest
+  name: orderer
+  containers:
+  - name: orderer
+    image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-orderer
+    env:
+    - ORDERER_GENERAL_LOGLEVEL=debug
+    - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+    - ORDERER_GENERAL_GENESISMETHOD=file
+    - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+    - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+    - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+    # enabled TLS
+    - ORDERER_GENERAL_TLS_ENABLED=true
+    - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+    - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+    - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    wd: /opt/gopath/src/github.com/hyperledger/fabric
+    command:
+    - orderer
+    expose:
+    - 7050
+  termination_grace_period: 10
