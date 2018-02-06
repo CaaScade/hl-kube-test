@@ -22,3 +22,4 @@ pod:
     expose:
     - 7050
   termination_grace_period: 10
+  restart_policy: never

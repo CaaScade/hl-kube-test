@@ -10,12 +10,16 @@ spec:
     - node
     - start
     env:
+    - name: CORE_VM_ENDPOINT
+      value: unix:///var/run/docker.sock
+    - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
+      value: blubnet
     - name: CORE_PEER_ID
       value: peer0.org1.example.com
     - name: CORE_PEER_ADDRESS
-      value: peer0.org1.example.com:7051
+      value: localhost:7051
     - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
-      value: peer0.org1.example.com:7051
+      value: localhost:7051
     - name: CORE_PEER_LOCALMSPID
       value: Org1MSP
     - name: CORE_LOGGING_LEVEL
@@ -43,5 +47,6 @@ spec:
       protocol: TCP
     resources: {}
     workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+  restartPolicy: Never
   terminationGracePeriodSeconds: 10
 

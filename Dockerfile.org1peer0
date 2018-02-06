@@ -4,8 +4,10 @@ RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
 
 COPY peer/peer /usr/local/bin
 COPY peer/sampleconfig $FABRIC_CFG_PATH/
-COPY crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp /etc/hyperledger/fabric/msp
-COPY crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls /etc/hyperledger/fabric/tls
+RUN rm -rf $FABRIC_CFG_PATH/msp
+COPY crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp $FABRIC_CFG_PATH/msp
+RUN rm -rf $FABRIC_CFG_PATH/tls
+COPY crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls $FABRIC_CFG_PATH/tls
 
 CMD ["peer","node","start"]
 LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \

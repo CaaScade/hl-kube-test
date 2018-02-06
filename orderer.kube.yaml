@@ -35,5 +35,6 @@ spec:
       protocol: TCP
     resources: {}
     workingDir: /opt/gopath/src/github.com/hyperledger/fabric
+  restartPolicy: Never
   terminationGracePeriodSeconds: 10
 
