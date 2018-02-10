@@ -37,12 +37,28 @@ spec:
     volumeMounts:
     - mountPath: /var/hyperledger/orderer
       mountPropagation: ""
-      name: crypto-config
+      name: files
+    - mountPath: /etc/hyperledger/fabric
+      mountPropagation: ""
+      name: config
     workingDir: /opt/gopath/src/github.com/hyperledger/fabric
   restartPolicy: Never
   terminationGracePeriodSeconds: 10
   volumes:
-  - name: crypto-config
+  - name: config
+    projected:
+      sources:
+      - configMap:
+          items:
+          - key: config
+            path: core.yaml
+          name: core-config
+      - configMap:
+          items:
+          - key: config
+            path: orderer.yaml
+          name: orderer-example-com-config
+  - name: files
     projected:
       sources:
       - configMap:

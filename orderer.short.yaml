@@ -23,11 +23,13 @@ pod:
     - 7050
     volume:
     - mount: /var/hyperledger/orderer
-      store: crypto-config
+      store: files
+    - mount: /etc/hyperledger/fabric
+      store: config
   termination_grace_period: 10
   restart_policy: never
   volumes:
-    crypto-config:
+    files:
       vol_type: projected
       sources:
       - config: admin-example-com-cert
@@ -57,4 +59,13 @@ pod:
       - secret: orderer-example-com-genesis-block
         items:
           orderer.genesis.block: block
+    config:
+      vol_type: projected
+      sources:
+      - config: core-config
+        items:
+          core.yaml: config
+      - config: orderer-example-com-config
+        items:
+          orderer.yaml: config
 

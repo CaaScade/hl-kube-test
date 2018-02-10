@@ -29,5 +29,39 @@ pod:
     expose:
     - 7051
     - 7053
+    volume:
+    - mount: /etc/hyperledger/fabric
+      store: files
   termination_grace_period: 10
   restart_policy: never
+  volumes:
+    files:
+      vol_type: projected
+      sources:
+      - config: admin-org1-example-com-cert
+        items:
+          msp/admincerts/Admin@org1.example.com-cert.pem: cert
+      - config: ca-org1-example-com-cert
+        items:
+          msp/cacerts/ca.org1.example.com-cert.pem: cert
+      - secret: peer0-org1-example-com-sk
+        items:
+          msp/keystore/peer_sk: sk
+      - config: peer0-org1-example-com-cert
+        items:
+          msp/signcerts/peer0.org1.example.com-cert.pem: cert
+      - config: tlsca-org1-example-com-cert
+        items:
+          msp/tlscacerts/tlsca.org1.example.com-cert.pem: cert
+      - config: tlsca-org1-example-com-cert
+        items:
+          tls/ca.crt: cert
+      - config: peer0-org1-example-com-tls-cert
+        items:
+          tls/server.crt: cert
+      - secret: peer0-org1-example-com-tls-sk
+        items:
+          tls/server.key: sk
+      - config: core-config
+        items:
+          core.yaml: config

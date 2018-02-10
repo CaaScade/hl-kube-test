@@ -8,9 +8,17 @@ build-admin-example-com-sk:
 	@kubectl delete secret admin-example-com-sk || true
 	@kubectl create secret generic admin-example-com-sk --from-file=sk=./crypto/Admin@example.com-sk
 
+build-admin-org1-example-com-cert:
+	@kubectl delete configmap admin-org1-example-com-cert || true
+	@kubectl create configmap admin-org1-example-com-cert --from-file=cert=./crypto/Admin@org1.example.com-cert.pem
+
 build-ca-example-com-cert:
 	@kubectl delete configmap ca-example-com-cert || true
 	@kubectl create configmap ca-example-com-cert --from-file=cert=./crypto/ca.example.com-cert.pem
+
+build-ca-org1-example-com-cert:
+	@kubectl delete configmap ca-org1-example-com-cert || true
+	@kubectl create configmap ca-org1-example-com-cert --from-file=cert=./crypto/ca.org1.example.com-cert.pem
 
 build-orderer-example-com-cert:
 	@kubectl delete configmap orderer-example-com-cert || true
@@ -28,17 +36,49 @@ build-orderer-example-com-tls-sk:
 	@kubectl delete secret orderer-example-com-tls-sk || true
 	@kubectl create secret generic orderer-example-com-tls-sk --from-file=sk=./crypto/orderer.example.com-tls.key
 
+build-peer0-org1-example-com-cert:
+	@kubectl delete configmap peer0-org1-example-com-cert || true
+	@kubectl create configmap peer0-org1-example-com-cert --from-file=cert=./crypto/peer0.org1.example.com-cert.pem
+
+build-peer0-org1-example-com-sk:
+	@kubectl delete secret peer0-org1-example-com-sk || true
+	@kubectl create secret generic peer0-org1-example-com-sk --from-file=sk=./crypto/peer0.org1.example.com-sk
+
+build-peer0-org1-example-com-tls-cert:
+	@kubectl delete configmap peer0-org1-example-com-tls-cert || true
+	@kubectl create configmap peer0-org1-example-com-tls-cert --from-file=cert=./crypto/peer0.org1.example.com-tls.crt
+
+build-peer0-org1-example-com-tls-sk:
+	@kubectl delete secret peer0-org1-example-com-tls-sk || true
+	@kubectl create secret generic peer0-org1-example-com-tls-sk --from-file=sk=./crypto/peer0.org1.example.com-tls.key
+
 build-tlsca-example-com-cert:
 	@kubectl delete configmap tlsca-example-com-cert || true
 	@kubectl create configmap tlsca-example-com-cert --from-file=cert=./crypto/tlsca.example.com-cert.pem
+
+build-tlsca-org1-example-com-cert:
+	@kubectl delete configmap tlsca-org1-example-com-cert || true
+	@kubectl create configmap tlsca-org1-example-com-cert --from-file=cert=./crypto/tlsca.org1.example.com-cert.pem
+
+build-orderer-crypto-config: build-admin-example-com-cert build-ca-example-com-cert build-orderer-example-com-cert build-orderer-example-com-sk build-orderer-example-com-tls-cert build-orderer-example-com-tls-sk build-tlsca-example-com-cert
+
+build-org1peer0-crypto-config: build-admin-org1-example-com-cert build-ca-org1-example-com-cert build-peer0-org1-example-com-cert build-peer0-org1-example-com-sk build-peer0-org1-example-com-tls-cert build-peer0-org1-example-com-tls-sk build-tlsca-org1-example-com-cert
+
+build-crypto-config: build-orderer-crypto-config build-org1peer0-crypto-config
 
 build-orderer-example-com-genesis-block:
 	@kubectl delete secret orderer-example-com-genesis-block || true
 	@kubectl create secret generic orderer-example-com-genesis-block --from-file=block=./crypto/orderer.genesis.block
 
-build-crypto-config: build-admin-example-com-cert build-admin-example-com-sk build-ca-example-com-cert build-orderer-example-com-cert build-orderer-example-com-sk build-orderer-example-com-tls-cert build-orderer-example-com-tls-sk build-tlsca-example-com-cert
+build-core-config:
+	@kubectl delete configmap core-config || true
+	@kubectl create configmap core-config --from-file=config=./config/core.yaml
 
-build-config: build-crypto-config build-orderer-example-com-genesis-block
+build-orderer-example-com-config:
+	@kubectl delete configmap orderer-example-com-config || true
+	@kubectl create configmap orderer-example-com-config --from-file=config=./config/orderer.yaml
+
+build-config: build-crypto-config build-orderer-example-com-genesis-block build-core-config build-orderer-example-com-config
 
 # ORDERER
 

@@ -46,7 +46,60 @@ spec:
     - containerPort: 7053
       protocol: TCP
     resources: {}
+    volumeMounts:
+    - mountPath: /etc/hyperledger/fabric
+      mountPropagation: ""
+      name: files
     workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
   restartPolicy: Never
   terminationGracePeriodSeconds: 10
+  volumes:
+  - name: files
+    projected:
+      sources:
+      - configMap:
+          items:
+          - key: cert
+            path: msp/admincerts/Admin@org1.example.com-cert.pem
+          name: admin-org1-example-com-cert
+      - configMap:
+          items:
+          - key: cert
+            path: msp/cacerts/ca.org1.example.com-cert.pem
+          name: ca-org1-example-com-cert
+      - secret:
+          items:
+          - key: sk
+            path: msp/keystore/peer_sk
+          name: peer0-org1-example-com-sk
+      - configMap:
+          items:
+          - key: cert
+            path: msp/signcerts/peer0.org1.example.com-cert.pem
+          name: peer0-org1-example-com-cert
+      - configMap:
+          items:
+          - key: cert
+            path: msp/tlscacerts/tlsca.org1.example.com-cert.pem
+          name: tlsca-org1-example-com-cert
+      - configMap:
+          items:
+          - key: cert
+            path: tls/ca.crt
+          name: tlsca-org1-example-com-cert
+      - configMap:
+          items:
+          - key: cert
+            path: tls/server.crt
+          name: peer0-org1-example-com-tls-cert
+      - secret:
+          items:
+          - key: sk
+            path: tls/server.key
+          name: peer0-org1-example-com-tls-sk
+      - configMap:
+          items:
+          - key: config
+            path: core.yaml
+          name: core-config
 

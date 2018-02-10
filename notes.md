@@ -14,3 +14,11 @@
     - view results of chaincode invocation
 
 - modified Peer runs chaincode through Kubernetes instead of Docker.
+
+# Notes for proposal
+
+- crypto-gen tool outputs files grouped/named semantically
+- persistence for orderer/peer state
+- scoped config
+    - core.yaml has peer-specific config
+    - core.yaml has orderer-specific config
