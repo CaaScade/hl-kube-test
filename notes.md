@@ -1,9 +1,11 @@
 # What needs to be done?
 
-- orderer service+deployment
-- peer service+deployment
-- configure Orderer using Kubernetes resources instead of files
-- configure Peer using Kubernetes resources instead of files
+- ~~orderer service+deployment~~
+- ~~peer service+deployment~~
+- ~~configure Orderer using Kubernetes resources instead of files~~
+- ~~configure Peer using Kubernetes resources instead of files~~
+
+- configure Fabric components to use k8s-internal DNS names
 
 - client pod for manually running commands:
     - create channel
