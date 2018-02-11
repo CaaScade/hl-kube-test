@@ -1,105 +1,138 @@
 apiVersion: v1
-kind: Pod
+kind: Service
+metadata:
+  name: peer0
+  namespace: hltest
+spec:
+  ports:
+  - name: "7050"
+    port: 7050
+    protocol: TCP
+  - name: "7051"
+    port: 7051
+    protocol: TCP
+  - name: "7052"
+    port: 7052
+    protocol: TCP
+  - name: "7053"
+    port: 7053
+    protocol: TCP
+  selector:
+    app: org1peer0
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: org1peer0
   namespace: hltest
 spec:
-  containers:
-  - command:
-    - peer
-    - node
-    - start
-    env:
-    - name: CORE_VM_ENDPOINT
-      value: unix:///var/run/docker.sock
-    - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
-      value: blubnet
-    - name: CORE_PEER_ID
-      value: peer0.org1.example.com
-    - name: CORE_PEER_ADDRESS
-      value: localhost:7051
-    - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
-      value: localhost:7051
-    - name: CORE_PEER_LOCALMSPID
-      value: Org1MSP
-    - name: CORE_LOGGING_LEVEL
-      value: DEBUG
-    - name: CORE_PEER_TLS_ENABLED
-      value: "true"
-    - name: CORE_PEER_GOSSIP_USELEADERELECTION
-      value: "true"
-    - name: CORE_PEER_GOSSIP_ORGLEADER
-      value: "false"
-    - name: CORE_PEER_PROFILE_ENABLED
-      value: "true"
-    - name: CORE_PEER_TLS_CERT_FILE
-      value: /etc/hyperledger/fabric/tls/server.crt
-    - name: CORE_PEER_TLS_KEY_FILE
-      value: /etc/hyperledger/fabric/tls/server.key
-    - name: CORE_PEER_TLS_ROOTCERT_FILE
-      value: /etc/hyperledger/fabric/tls/ca.crt
-    image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-org1peer0
-    name: org1peer0
-    ports:
-    - containerPort: 7051
-      protocol: TCP
-    - containerPort: 7053
-      protocol: TCP
-    resources: {}
-    volumeMounts:
-    - mountPath: /etc/hyperledger/fabric
-      mountPropagation: ""
-      name: files
-    workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-  restartPolicy: Never
-  terminationGracePeriodSeconds: 10
-  volumes:
-  - name: files
-    projected:
-      sources:
-      - configMap:
-          items:
-          - key: cert
-            path: msp/admincerts/Admin@org1.example.com-cert.pem
-          name: admin-org1-example-com-cert
-      - configMap:
-          items:
-          - key: cert
-            path: msp/cacerts/ca.org1.example.com-cert.pem
-          name: ca-org1-example-com-cert
-      - secret:
-          items:
-          - key: sk
-            path: msp/keystore/peer_sk
-          name: peer0-org1-example-com-sk
-      - configMap:
-          items:
-          - key: cert
-            path: msp/signcerts/peer0.org1.example.com-cert.pem
-          name: peer0-org1-example-com-cert
-      - configMap:
-          items:
-          - key: cert
-            path: msp/tlscacerts/tlsca.org1.example.com-cert.pem
-          name: tlsca-org1-example-com-cert
-      - configMap:
-          items:
-          - key: cert
-            path: tls/ca.crt
-          name: tlsca-org1-example-com-cert
-      - configMap:
-          items:
-          - key: cert
-            path: tls/server.crt
-          name: peer0-org1-example-com-tls-cert
-      - secret:
-          items:
-          - key: sk
-            path: tls/server.key
-          name: peer0-org1-example-com-tls-sk
-      - configMap:
-          items:
-          - key: config
-            path: core.yaml
-          name: core-config
+  replicas: 1
+  selector:
+    matchLabels:
+      app: org1peer0
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: org1peer0
+    spec:
+      containers:
+      - command:
+        - peer
+        - node
+        - start
+        env:
+        - name: CORE_VM_ENDPOINT
+          value: unix:///var/run/docker.sock
+        - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
+          value: blubnet
+        - name: CORE_PEER_ID
+          value: peer0.org1.example.com
+        - name: CORE_PEER_ADDRESS
+          value: localhost:7051
+        - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
+          value: localhost:7051
+        - name: CORE_PEER_LOCALMSPID
+          value: Org1MSP
+        - name: CORE_LOGGING_LEVEL
+          value: DEBUG
+        - name: CORE_PEER_TLS_ENABLED
+          value: "true"
+        - name: CORE_PEER_GOSSIP_USELEADERELECTION
+          value: "true"
+        - name: CORE_PEER_GOSSIP_ORGLEADER
+          value: "false"
+        - name: CORE_PEER_PROFILE_ENABLED
+          value: "true"
+        - name: CORE_PEER_TLS_CERT_FILE
+          value: /etc/hyperledger/fabric/tls/server.crt
+        - name: CORE_PEER_TLS_KEY_FILE
+          value: /etc/hyperledger/fabric/tls/server.key
+        - name: CORE_PEER_TLS_ROOTCERT_FILE
+          value: /etc/hyperledger/fabric/tls/ca.crt
+        image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-org1peer0
+        name: org1peer0
+        ports:
+        - containerPort: 7051
+          protocol: TCP
+        - containerPort: 7053
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/hyperledger/fabric
+          mountPropagation: ""
+          name: files
+        workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: files
+        projected:
+          sources:
+          - configMap:
+              items:
+              - key: cert
+                path: msp/admincerts/Admin@org1.example.com-cert.pem
+              name: admin-org1-example-com-cert
+          - configMap:
+              items:
+              - key: cert
+                path: msp/cacerts/ca.org1.example.com-cert.pem
+              name: ca-org1-example-com-cert
+          - secret:
+              items:
+              - key: sk
+                path: msp/keystore/peer_sk
+              name: peer0-org1-example-com-sk
+          - configMap:
+              items:
+              - key: cert
+                path: msp/signcerts/peer0.org1.example.com-cert.pem
+              name: peer0-org1-example-com-cert
+          - configMap:
+              items:
+              - key: cert
+                path: msp/tlscacerts/tlsca.org1.example.com-cert.pem
+              name: tlsca-org1-example-com-cert
+          - configMap:
+              items:
+              - key: cert
+                path: tls/ca.crt
+              name: tlsca-org1-example-com-cert
+          - configMap:
+              items:
+              - key: cert
+                path: tls/server.crt
+              name: peer0-org1-example-com-tls-cert
+          - secret:
+              items:
+              - key: sk
+                path: tls/server.key
+              name: peer0-org1-example-com-tls-sk
+          - configMap:
+              items:
+              - key: config
+                path: core.yaml
+              name: core-config
 

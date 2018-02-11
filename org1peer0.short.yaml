@@ -1,6 +1,20 @@
-pod:
+service:
+  namespace: hltest
+  name: peer0
+  selector:
+    app: org1peer0
+  ports:
+  - 7050: 7050
+  - 7051: 7051
+  - 7052: 7052
+  - 7053: 7053
+---
+deployment:
   namespace: hltest
   name: org1peer0
+  replicas: 1
+  selector:
+    app: org1peer0
   containers:
   - name: org1peer0
     image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-org1peer0
@@ -33,7 +47,7 @@ pod:
     - mount: /etc/hyperledger/fabric
       store: files
   termination_grace_period: 10
-  restart_policy: never
+  restart_policy: always
   volumes:
     files:
       vol_type: projected

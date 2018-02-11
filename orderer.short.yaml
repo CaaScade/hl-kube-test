@@ -1,6 +1,17 @@
-pod:
+service:
   namespace: hltest
   name: orderer
+  selector:
+    app: orderer
+  ports:
+  - 7050: 7050
+---
+deployment:
+  namespace: hltest
+  name: orderer
+  replicas: 1
+  selector:
+    app: orderer
   containers:
   - name: orderer
     image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-orderer
@@ -27,7 +38,7 @@ pod:
     - mount: /etc/hyperledger/fabric
       store: config
   termination_grace_period: 10
-  restart_policy: never
+  restart_policy: always
   volumes:
     files:
       vol_type: projected

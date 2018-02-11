@@ -3,10 +3,6 @@ ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
 RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
 
 COPY orderer/orderer /usr/local/bin
-#COPY orderer/sampleconfig $FABRIC_CFG_PATH/
-#COPY channel-artifacts/genesis.block /var/hyperledger/orderer/orderer.genesis.block
-#COPY crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp /var/hyperledger/orderer/msp
-#COPY crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls /var/hyperledger/orderer/tls
 
 EXPOSE 7050
 CMD ["orderer"]
