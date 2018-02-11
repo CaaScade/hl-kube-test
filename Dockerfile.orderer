@@ -4,6 +4,13 @@ RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
 
 COPY orderer/orderer /usr/local/bin
 
+# ez-mode for development
+COPY config/core.yaml $FABRIC_CFG_PATH/core.yaml
+COPY config/orderer.yaml $FABRIC_CFG_PATH/orderer.yaml
+COPY config/channel-artifacts/genesis.block /var/hyperledger/orderer/orderer.genesis.block
+COPY config/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp /var/hyperledger/orderer/msp
+COPY config/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls /var/hyperledger/orderer/tls
+
 EXPOSE 7050
 CMD ["orderer"]
 LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \
