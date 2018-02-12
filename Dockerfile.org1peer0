@@ -8,13 +8,14 @@ COPY tools/cryptogen /usr/local/bin
 COPY tools/configtxgen /usr/local/bin
 COPY tools/configtxlator /usr/local/bin
 COPY config /workspace
+COPY chaincode /workspace/chaincode
 
 COPY peer/peer /usr/local/bin
 
 # ez-mode for development
 COPY config/core.yaml $FABRIC_CFG_PATH/core.yaml
-COPY config/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp $FABRIC_CFG_PATH/msp
-COPY config/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls $FABRIC_CFG_PATH/tls
+COPY config/crypto-config/peerOrganizations/org1/peers/peer0.org1/msp $FABRIC_CFG_PATH/msp
+COPY config/crypto-config/peerOrganizations/org1/peers/peer0.org1/tls $FABRIC_CFG_PATH/tls
 
 CMD ["peer","node","start"]
 LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \

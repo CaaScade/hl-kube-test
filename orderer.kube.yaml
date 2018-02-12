@@ -9,25 +9,25 @@ spec:
     port: 7050
     protocol: TCP
   selector:
-    app: orderer
+    app: orderer-example-com
   type: ClusterIP
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: orderer
+  name: orderer-example-com
   namespace: hltest
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: orderer
+      app: orderer-example-com
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app: orderer
+        app: orderer-example-com
     spec:
       containers:
       - command:
@@ -58,76 +58,7 @@ spec:
         ports:
         - containerPort: 7050
           protocol: TCP
-        volumeMounts:
-        - mountPath: /var/hyperledger/orderer
-          mountPropagation: ""
-          name: files
-        - mountPath: /etc/hyperledger/fabric
-          mountPropagation: ""
-          name: config
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
-      volumes:
-      - name: config
-        projected:
-          sources:
-          - configMap:
-              items:
-              - key: config
-                path: core.yaml
-              name: core-config
-          - configMap:
-              items:
-              - key: config
-                path: orderer.yaml
-              name: orderer-example-com-config
-      - name: files
-        projected:
-          sources:
-          - configMap:
-              items:
-              - key: cert
-                path: msp/admincerts/Admin@example.com-cert.pem
-              name: admin-example-com-cert
-          - configMap:
-              items:
-              - key: cert
-                path: msp/cacerts/ca.example.com-cert.pem
-              name: ca-example-com-cert
-          - secret:
-              items:
-              - key: sk
-                path: msp/keystore/orderer_sk
-              name: orderer-example-com-sk
-          - configMap:
-              items:
-              - key: cert
-                path: msp/signcerts/orderer.example.com-cert.pem
-              name: orderer-example-com-cert
-          - configMap:
-              items:
-              - key: cert
-                path: msp/tlscacerts/tlsca.example.com-cert.pem
-              name: tlsca-example-com-cert
-          - configMap:
-              items:
-              - key: cert
-                path: tls/ca.crt
-              name: tlsca-example-com-cert
-          - configMap:
-              items:
-              - key: cert
-                path: tls/server.crt
-              name: orderer-example-com-tls-cert
-          - secret:
-              items:
-              - key: sk
-                path: tls/server.key
-              name: orderer-example-com-tls-sk
-          - secret:
-              items:
-              - key: block
-                path: orderer.genesis.block
-              name: orderer-example-com-genesis-block
 

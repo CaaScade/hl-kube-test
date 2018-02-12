@@ -1,0 +1,1 @@
+export CORE_PEER_MSPCONFIGPATH=/workspace/crypto-config/peerOrganizations/org1/users/Admin\@org1/msp/

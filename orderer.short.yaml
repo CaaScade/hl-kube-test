@@ -1,6 +1,6 @@
 service:
   namespace: hltest
-  name: orderer-example-com
+  name: orderer
   selector:
     app: orderer-example-com
   ports:

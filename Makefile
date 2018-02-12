@@ -20,7 +20,7 @@ deploy-orderer:
 
 kill-orderer:
 	@kubectl delete service orderer || true
-	@kubectl delete deployment orderer || true
+	@kubectl delete deployment orderer-example-com || true
 
 reload-orderer: kill-orderer push-orderer deploy-orderer
 
@@ -46,3 +46,7 @@ kill-org1peer0:
 	@kubectl delete deployment org1peer0 || true
 
 reload-org1peer0: kill-org1peer0 push-org1peer0 deploy-org1peer0
+
+# ALL
+
+reload-all: kill-orderer kill-org1peer0 build-config push-orderer push-org1peer0 deploy-orderer deploy-org1peer0
