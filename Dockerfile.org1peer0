@@ -3,12 +3,13 @@ ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
 RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
 
 # client tools
-RUN apt-get update && apt-get install -y dnsutils curl
+ENV GOPATH /opt/gopath
+RUN apt-get update && apt-get install -y dnsutils curl vim golang
 COPY tools/cryptogen /usr/local/bin
 COPY tools/configtxgen /usr/local/bin
 COPY tools/configtxlator /usr/local/bin
 COPY config /workspace
-COPY chaincode /workspace/chaincode
+COPY chaincode /opt/gopath/src/chaincode
 
 COPY peer/peer /usr/local/bin
 
