@@ -8,7 +8,6 @@ build-config:
 # ORDERER
 
 build-orderer:
-	@cp /home/kynan/workspace/go/src/github.com/hyperledger/fabric/build/image/orderer/payload/orderer orderer/
 	@docker build -t "${ECRNAME}/test-bundle-orderer" -f Dockerfile.orderer .
 
 push-orderer: build-orderer
@@ -27,10 +26,6 @@ reload-orderer: kill-orderer push-orderer deploy-orderer
 # ORG1 PEER0
 
 build-org1peer0:
-	@cp /home/kynan/workspace/go/src/github.com/hyperledger/fabric/build/image/tools/payload/configtxgen tools/
-	@cp /home/kynan/workspace/go/src/github.com/hyperledger/fabric/build/image/tools/payload/configtxlator tools/
-	@cp /home/kynan/workspace/go/src/github.com/hyperledger/fabric/build/image/tools/payload/cryptogen tools/
-	@cp /home/kynan/workspace/go/src/github.com/hyperledger/fabric/build/image/peer/payload/peer peer/
 	@docker build -t "${ECRNAME}/test-bundle-org1peer0" -f Dockerfile.org1peer0 .
 
 push-org1peer0: build-org1peer0

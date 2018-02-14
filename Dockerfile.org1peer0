@@ -1,17 +1,19 @@
-FROM hyperledger/fabric-baseos:x86_64-0.4.5
+#FROM hyperledger/fabric-baseos:x86_64-0.4.5
+FROM hyperledger/fabric-peer:x86_64-1.0.5
 ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
+RUN rm -rf $FABRIC_CFG_PATH
 RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
 
 # client tools
 ENV GOPATH /opt/gopath
 RUN apt-get update && apt-get install -y dnsutils curl vim golang
-COPY tools/cryptogen /usr/local/bin
-COPY tools/configtxgen /usr/local/bin
-COPY tools/configtxlator /usr/local/bin
+COPY bin/cryptogen /usr/local/bin
+COPY bin/configtxgen /usr/local/bin
+COPY bin/configtxlator /usr/local/bin
 COPY config /workspace
 COPY chaincode /opt/gopath/src/chaincode
 
-COPY peer/peer /usr/local/bin
+#COPY peer/peer /usr/local/bin
 
 # ez-mode for development
 COPY config/core.yaml $FABRIC_CFG_PATH/core.yaml
@@ -19,5 +21,5 @@ COPY config/crypto-config/peerOrganizations/org1/peers/peer0.org1/msp $FABRIC_CF
 COPY config/crypto-config/peerOrganizations/org1/peers/peer0.org1/tls $FABRIC_CFG_PATH/tls
 
 CMD ["peer","node","start"]
-LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \
-      org.hyperledger.fabric.base.version=0.4.5
+#LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \
+      #org.hyperledger.fabric.base.version=0.4.5

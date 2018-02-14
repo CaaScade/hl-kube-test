@@ -1,8 +1,10 @@
-FROM hyperledger/fabric-baseos:x86_64-0.4.5
+#FROM hyperledger/fabric-baseos:x86_64-0.4.5
+FROM hyperledger/fabric-orderer:x86_64-1.0.5
 ENV FABRIC_CFG_PATH /etc/hyperledger/fabric
+RUN rm -rf $FABRIC_CFG_PATH
 RUN mkdir -p /var/hyperledger/production $FABRIC_CFG_PATH
 
-COPY orderer/orderer /usr/local/bin
+#COPY orderer/orderer /usr/local/bin
 
 # ez-mode for development
 COPY config/core.yaml $FABRIC_CFG_PATH/core.yaml
@@ -13,5 +15,5 @@ COPY config/crypto-config/ordererOrganizations/example.com/orderers/orderer.exam
 
 EXPOSE 7050
 CMD ["orderer"]
-LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \
-      org.hyperledger.fabric.base.version=0.4.5
+#LABEL org.hyperledger.fabric.version=1.1.0-beta-snapshot-15bda58 \
+      #org.hyperledger.fabric.base.version=0.4.5
