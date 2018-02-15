@@ -55,9 +55,7 @@ spec:
         - name: CORE_LOGGING_LEVEL
           value: DEBUG
         - name: CORE_PEER_TLS_ENABLED
-          value: "true"
-        - name: CORE_PEER_CHAINCODELISTENADDRESS
-          value: 0.0.0.0:7052
+          value: "false"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
           value: "true"
         - name: CORE_PEER_GOSSIP_ORGLEADER
