@@ -45,7 +45,7 @@ spec:
         - start
         env:
         - name: CORE_VM_ENDPOINT
-          value: unix:///host/var/run/docker.sock
+          value: http://localhost:2375
         - name: CORE_PEER_ID
           value: peer0
         - name: CORE_PEER_ADDRESS
@@ -75,16 +75,18 @@ spec:
           protocol: TCP
         - containerPort: 7053
           protocol: TCP
-        volumeMounts:
-        - mountPath: /host/var/run/docker.sock
-          mountPropagation: ""
-          name: docker
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+      - image: docker:dind
+        name: dind
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /var/lib/docker
+          mountPropagation: ""
+          name: docker-graph-storage
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
       volumes:
-      - hostPath:
-          path: /var/run/docker.sock
-          type: Socket
-        name: docker
+      - emptyDir: {}
+        name: docker-graph-storage
 
