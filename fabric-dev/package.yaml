@@ -1,0 +1,77 @@
+name:                fabric-dev
+version:             0.1.0.0
+github:              "githubuser/fabric-dev"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2018 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/githubuser/fabric-dev#readme>
+
+dependencies:
+- aeson
+- async
+- base >= 4.7 && < 5
+- bytestring
+- classy-prelude
+- conduit
+- conduit-combinators
+- containers
+- deepseq
+- directory
+- filepath
+- ghc-prim
+- http-client
+- lens
+- lens-aeson
+- monad-logger
+- mtl
+- optparse-applicative
+- process
+- recursion-schemes
+- safe
+- shelly
+- stm
+- text
+- transformers
+- unix
+- unordered-containers
+- vector
+- yaml
+
+
+library:
+  source-dirs: src
+
+executables:
+  fabric-dev-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fabric-dev
+
+tests:
+  fabric-dev-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fabric-dev

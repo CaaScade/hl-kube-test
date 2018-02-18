@@ -1,0 +1,6 @@
+.stack-work/
+fabric-dev.cabal
+*~
+testroot/channel-artifacts
+testroot/crypto-config
+testroot/config-artifacts
