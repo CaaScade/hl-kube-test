@@ -17,7 +17,7 @@ deployment:
     app: org1peer0
   containers:
   - name: org1peer0
-    image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-org1peer0
+    image: hyperledger/fabric-peer:x86_64-1.1.0-alpha
     env:
     - CORE_VM_ENDPOINT=http://localhost:2375
     #- CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=blubnet
@@ -29,7 +29,7 @@ deployment:
     # defaults
     - CORE_LOGGING_LEVEL=DEBUG
     - CORE_PEER_TLS_ENABLED=false
-    #- CORE_PEER_CHAINCODELISTENADDRESS=peer0:7052
+    - CORE_PEER_CHAINCODELISTENADDRESS=localhost:7052
     - CORE_PEER_GOSSIP_USELEADERELECTION=true
     - CORE_PEER_GOSSIP_ORGLEADER=false
     - CORE_PEER_PROFILE_ENABLED=true
@@ -44,14 +44,58 @@ deployment:
     expose:
     - 7051
     - 7053
+    volume:
+    - mount: /etc/hyperledger/fabric
+      store: config
+    - mount: /etc/hyperledger/fabric/msp
+      store: msp-target
+    - mount: /etc/hyperledger/fabric/tls
+      store: tls-target
   - name: dind
     image: docker:dind
     privileged: true
     volume:
     - mount: /var/lib/docker
       store: docker-graph-storage
+  init_containers:
+  - name: tar
+    image: ubuntu:16.04
+    command:
+    - sh
+    - -c
+    - |
+      set -e
+      set -x
+      cd /target
+      tar -xvf /msp-source/msp.tar.gz
+      tar -xvf /tls-source/tls.tar.gz
+    volume:
+    - mount: /target/msp
+      store: msp-target
+    - mount: /target/tls
+      store: tls-target
+    - mount: /msp-source
+      store: msp-config
+    - mount: /tls-source
+      store: tls-config
   termination_grace_period: 10
   restart_policy: always
   volumes:
-    docker-graph-storage:
-      vol_type: empty_dir
+    docker-graph-storage: empty_dir
+    msp-target: empty_dir
+    tls-target: empty_dir
+    msp-config:
+      items:
+        msp.tar.gz: bundle
+      vol_id: peer0-org1-msp
+      vol_type: secret
+    tls-config:
+      items:
+        tls.tar.gz: bundle
+      vol_id: peer0-org1-tls
+      vol_type: secret
+    config:
+      items:
+        core.yaml: file
+      vol_id: core-yaml
+      vol_type: config-map

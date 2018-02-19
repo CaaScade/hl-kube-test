@@ -56,6 +56,8 @@ spec:
           value: DEBUG
         - name: CORE_PEER_TLS_ENABLED
           value: "false"
+        - name: CORE_PEER_CHAINCODELISTENADDRESS
+          value: localhost:7052
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
           value: "true"
         - name: CORE_PEER_GOSSIP_ORGLEADER
@@ -68,13 +70,23 @@ spec:
           value: /etc/hyperledger/fabric/tls/server.key
         - name: CORE_PEER_TLS_ROOTCERT_FILE
           value: /etc/hyperledger/fabric/tls/ca.crt
-        image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-org1peer0
+        image: hyperledger/fabric-peer:x86_64-1.1.0-alpha
         name: org1peer0
         ports:
         - containerPort: 7051
           protocol: TCP
         - containerPort: 7053
           protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/hyperledger/fabric
+          mountPropagation: ""
+          name: config
+        - mountPath: /etc/hyperledger/fabric/msp
+          mountPropagation: ""
+          name: msp-target
+        - mountPath: /etc/hyperledger/fabric/tls
+          mountPropagation: ""
+          name: tls-target
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
       - image: docker:dind
         name: dind
@@ -84,9 +96,56 @@ spec:
         - mountPath: /var/lib/docker
           mountPropagation: ""
           name: docker-graph-storage
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - |
+          set -e
+          set -x
+          cd /target
+          tar -xvf /msp-source/msp.tar.gz
+          tar -xvf /tls-source/tls.tar.gz
+        image: ubuntu:16.04
+        name: tar
+        volumeMounts:
+        - mountPath: /target/msp
+          mountPropagation: ""
+          name: msp-target
+        - mountPath: /target/tls
+          mountPropagation: ""
+          name: tls-target
+        - mountPath: /msp-source
+          mountPropagation: ""
+          name: msp-config
+        - mountPath: /tls-source
+          mountPropagation: ""
+          name: tls-config
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
       volumes:
+      - configMap:
+          items:
+          - key: file
+            path: core.yaml
+          name: core-yaml
+        name: config
       - emptyDir: {}
         name: docker-graph-storage
+      - name: msp-config
+        secret:
+          items:
+          - key: bundle
+            path: msp.tar.gz
+          secretName: peer0-org1-msp
+      - emptyDir: {}
+        name: msp-target
+      - name: tls-config
+        secret:
+          items:
+          - key: bundle
+            path: tls.tar.gz
+          secretName: peer0-org1-tls
+      - emptyDir: {}
+        name: tls-target
 

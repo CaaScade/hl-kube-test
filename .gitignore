@@ -1,2 +1,3 @@
 config/crypto-config
 config/channel-artifacts
+config/*.tar.gz

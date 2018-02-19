@@ -40,7 +40,7 @@ spec:
         - name: ORDERER_GENERAL_GENESISMETHOD
           value: file
         - name: ORDERER_GENERAL_GENESISFILE
-          value: /var/hyperledger/orderer/orderer.genesis.block
+          value: /var/hyperledger/orderer/genesis/orderer.genesis.block
         - name: ORDERER_GENERAL_LOCALMSPID
           value: OrdererMSP
         - name: ORDERER_GENERAL_LOCALMSPDIR
@@ -53,12 +53,78 @@ spec:
           value: /var/hyperledger/orderer/tls/server.crt
         - name: ORDERER_GENERAL_TLS_ROOTCAS
           value: '[/var/hyperledger/orderer/tls/ca.crt]'
-        image: 693838464287.dkr.ecr.us-east-1.amazonaws.com/test-bundle-orderer
+        image: hyperledger/fabric-orderer:x86_64-1.1.0-alpha
         name: orderer
         ports:
         - containerPort: 7050
           protocol: TCP
+        volumeMounts:
+        - mountPath: /var/hyperledger/orderer
+          mountPropagation: ""
+          name: files
+        - mountPath: /var/hyperledger/orderer/genesis
+          mountPropagation: ""
+          name: genesis
+        - mountPath: /etc/hyperledger/fabric
+          mountPropagation: ""
+          name: config
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - |
+          set -e
+          set -x
+          cd /target
+          tar -xvf /msp-source/msp.tar.gz
+          tar -xvf /tls-source/tls.tar.gz
+        image: ubuntu:16.04
+        name: tar
+        volumeMounts:
+        - mountPath: /target
+          mountPropagation: ""
+          name: files
+        - mountPath: /msp-source
+          mountPropagation: ""
+          name: msp-config
+        - mountPath: /tls-source
+          mountPropagation: ""
+          name: tls-config
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
+      volumes:
+      - name: config
+        projected:
+          sources:
+          - configMap:
+              items:
+              - key: file
+                path: core.yaml
+              name: core-yaml
+          - configMap:
+              items:
+              - key: file
+                path: orderer.yaml
+              name: orderer-yaml
+      - emptyDir: {}
+        name: files
+      - name: genesis
+        secret:
+          items:
+          - key: file
+            path: orderer.genesis.block
+          secretName: orderer-genesis-block
+      - name: msp-config
+        secret:
+          items:
+          - key: bundle
+            path: msp.tar.gz
+          secretName: orderer-example-com-msp
+      - name: tls-config
+        secret:
+          items:
+          - key: bundle
+            path: tls.tar.gz
+          secretName: orderer-example-com-tls
 
