@@ -14,7 +14,7 @@ deployment:
     app: orderer-example-com
   containers:
   - name: orderer
-    image: hyperledger/fabric-orderer:x86_64-1.1.0-alpha
+    image: hyperledger/fabric-orderer:x86_64-1.0.5
     env:
     - ORDERER_GENERAL_LOGLEVEL=debug
     - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0

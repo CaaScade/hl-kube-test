@@ -32,6 +32,19 @@ kill-org1peer0:
 
 reload-org1peer0: kill-org1peer0 deploy-org1peer0
 
+# ORG1 PEER0 ADMIN CLIENT
+
+kill-org1admin:
+	@kubectl delete pod org1admin || true
+
+deploy-org1admin:
+	@short -k -f org1admin.short.yaml > org1admin.kube.yaml
+	@kubectl create -f org1admin.kube.yaml
+
+copy-org1admin:
+	@kubectl cp ./config org1admin:/workspace -c org1admin
+	@kubectl cp ./chaincode org1admin:/opt/gopath/src/chaincode -c org1admin
+
 # ALL
 
-reload-all: kill-orderer kill-org1peer0 build-config deploy-orderer deploy-org1peer0
+reload-all: kill-orderer kill-org1peer0 kill-org1admin build-config deploy-orderer deploy-org1peer0

@@ -17,7 +17,7 @@ deployment:
     app: org1peer0
   containers:
   - name: org1peer0
-    image: hyperledger/fabric-peer:x86_64-1.1.0-alpha
+    image: hyperledger/fabric-peer:x86_64-1.0.5
     env:
     - CORE_VM_ENDPOINT=http://localhost:2375
     #- CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=blubnet
