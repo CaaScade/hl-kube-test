@@ -19,32 +19,32 @@ kill-orderer:
 
 reload-orderer: kill-orderer deploy-orderer
 
-# ORG1 PEER0
+# PEERS
 
-deploy-org1peer0:
-	@short -k -f org1peer0.short.yaml > org1peer0.kube.yaml
-	@kubectl create -f org1peer0.kube.yaml
+deploy-peers:
+	@short -k -f peers.short.yaml > peers.kube.yaml
+	@kubectl create -f peers.kube.yaml
 
-# TODO: delete service <what is the service name really?>
-kill-org1peer0:
-	@kubectl delete service peer0 || true
-	@kubectl delete deployment org1peer0 || true
+kill-peers:
+	@kubectl delete -f peers.kube.yaml
 
-reload-org1peer0: kill-org1peer0 deploy-org1peer0
+reload-peers: kill-peers deploy-peers
 
-# ORG1 PEER0 ADMIN CLIENT
+# CLIS
 
-kill-org1admin:
-	@kubectl delete pod org1admin || true
+deploy-clis:
+	@short -k -f clis.short.yaml > clis.kube.yaml
+	@kubectl create -f clis.kube.yaml
 
-deploy-org1admin:
-	@short -k -f org1admin.short.yaml > org1admin.kube.yaml
-	@kubectl create -f org1admin.kube.yaml
+kill-clis:
+	@kubectl delete -f clis.kube.yaml
 
-copy-org1admin:
-	@kubectl cp ./config org1admin:/workspace -c org1admin
-	@kubectl cp ./chaincode org1admin:/opt/gopath/src/chaincode -c org1admin
+reload-clis: kill-clis deploy-clis
+
+#copy-org1admin:
+#	@kubectl cp ./config org1admin:/workspace -c org1admin
+#	@kubectl cp ./chaincode org1admin:/opt/gopath/src/chaincode -c org1admin
 
 # ALL
 
-reload-all: kill-orderer kill-org1peer0 kill-org1admin build-config deploy-orderer deploy-org1peer0
+reload-all: kill-orderer kill-peers kill-clis build-config deploy-orderer deploy-peers deploy-clis

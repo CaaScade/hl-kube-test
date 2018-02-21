@@ -1,14 +1,27 @@
-pod:
-  namespace: hltest
-  name: org1admin
+params:
+- namespace: k8s namespace
+- config: configuration for the peer
+  default:
+    user: Admin
+    peer: peer0
+    org: org1
+    peer_service_name: peer0-org1
+    admin_service_name: admin-org1
+    client_service_name: admin-peer0-org1-cli
+deployment:
+  namespace: ${namespace}
+  name: ${config.client_service_name}
+  replicas: 1
+  selector:
+    app: ${config.client_service_name}
   containers:
-  - name: org1admin
+  - name: cli
     image: hyperledger/fabric-tools:x86_64-1.0.5
     env:
     - GOPATH=/opt/gopath
     - CORE_VM_ENDPOINT=http://localhost:2375
     - CORE_PEER_ID=cli
-    - CORE_PEER_ADDRESS=peer0:7051
+    - CORE_PEER_ADDRESS=${config.peer_service_name}:7051
     - CORE_PEER_LOCALMSPID=Org1MSP
     - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
     - CORE_CHAINCODE_KEEPALIVE=10
@@ -23,9 +36,7 @@ pod:
     - 7053
     volume:
     - mount: /etc/hyperledger/fabric
-      store: config
-    - mount: /etc/hyperledger/fabric/msp
-      store: msp-target
+      store: files-target
   - name: dind
     image: docker:dind
     privileged: true
@@ -42,21 +53,24 @@ pod:
       set -e
       set -x
       cd /target
+      cp -Lr /config-source/* .
       tar -xvf /msp-source/msp.tar.gz
     volume:
-    - mount: /target/msp
-      store: msp-target
+    - mount: /target
+      store: files-target
+    - mount: /config-source
+      store: config
     - mount: /msp-source
       store: msp-config
-  termination_grace_period: 0
-  restart_policy: never
+  termination_grace_period: 10
+  restart_policy: always
   volumes:
     docker-graph-storage: empty_dir
-    msp-target: empty_dir
+    files-target: empty_dir
     msp-config:
       items:
         msp.tar.gz: bundle
-      vol_id: peer0-org1-msp
+      vol_id: ${config.admin_service_name}-msp
       vol_type: secret
     config:
       items:

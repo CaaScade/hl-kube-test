@@ -19,7 +19,7 @@ deployment:
     - ORDERER_GENERAL_LOGLEVEL=debug
     - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
     - ORDERER_GENERAL_GENESISMETHOD=file
-    - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/genesis/orderer.genesis.block
+    - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
     - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
     - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
     # enabled TLS
@@ -34,9 +34,7 @@ deployment:
     - 7050
     volume:
     - mount: /var/hyperledger/orderer
-      store: files
-    - mount: /var/hyperledger/orderer/genesis
-      store: genesis
+      store: files-target
     - mount: /etc/hyperledger/fabric
       store: config
   init_containers:
@@ -49,19 +47,23 @@ deployment:
       set -e
       set -x
       cd /target
+      cp -Lr /genesis-source/* .
       tar -xvf /msp-source/msp.tar.gz
       tar -xvf /tls-source/tls.tar.gz
+      find /target
     volume:
     - mount: /target
-      store: files
+      store: files-target
     - mount: /msp-source
       store: msp-config
     - mount: /tls-source
       store: tls-config
+    - mount: /genesis-source
+      store: genesis
   termination_grace_period: 10
   restart_policy: always
   volumes:
-    files: empty_dir
+    files-target: empty_dir
     msp-config:
       items:
         msp.tar.gz: bundle

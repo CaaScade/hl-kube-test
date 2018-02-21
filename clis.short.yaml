@@ -1,0 +1,7 @@
+imports:
+- config: ./short-config/admin-peer0-org1.config.yaml
+- deployment: ./cli.deployment.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+deployment: ${deployment}
