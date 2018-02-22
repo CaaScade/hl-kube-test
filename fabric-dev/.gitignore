@@ -4,3 +4,4 @@ fabric-dev.cabal
 testroot/channel-artifacts
 testroot/crypto-config
 testroot/config-artifacts
+testroot/kube-config

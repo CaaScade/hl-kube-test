@@ -1,0 +1,90 @@
+params:
+- namespace: k8s namespace
+- config: configuration for the peer
+  default:
+    name: peer0
+    org: org1
+    service_name: peer0-org1
+deployment:
+  namespace: ${namespace}
+  name: ${config.service_name}
+  replicas: 1
+  selector:
+    app: ${config.service_name}
+  containers:
+  - name: peer
+    image: hyperledger/fabric-peer:x86_64-1.0.5
+    env:
+    - CORE_LOGGING_LEVEL=DEBUG
+    - CORE_VM_ENDPOINT=http://localhost:2375
+    - CORE_PEER_ADDRESS=${config.service_name}:7051
+    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=localhost:7051
+    - CORE_PEER_CHAINCODELISTENADDRESS=localhost:7052
+    - CORE_PEER_ID=${config.service_name}
+    - CORE_PEER_LOCALMSPID=Org1MSP
+    - CORE_PEER_GOSSIP_USELEADERELECTION=true
+    - CORE_PEER_GOSSIP_ORGLEADER=false
+    - CORE_PEER_PROFILE_ENABLED=true
+    - CORE_PEER_TLS_ENABLED=false
+    - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+    - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+    - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    wd: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command:
+    - peer
+    - node
+    - start
+    expose:
+    - 7051
+    - 7053
+    volume:
+    - mount: /etc/hyperledger/fabric
+      store: files-target
+  - name: dind
+    image: docker:dind
+    privileged: true
+    volume:
+    - mount: /var/lib/docker
+      store: docker-graph-storage
+  init_containers:
+  - name: tar
+    image: ubuntu:16.04
+    command:
+    - sh
+    - -c
+    - |
+      set -e
+      set -x
+      cd /target
+      cp -Lr /config-source/* .
+      tar -xvf /msp-source/msp.tar.gz
+      tar -xvf /tls-source/tls.tar.gz
+    volume:
+    - mount: /target
+      store: files-target
+    - mount: /config-source
+      store: config
+    - mount: /msp-source
+      store: msp-config
+    - mount: /tls-source
+      store: tls-config
+  termination_grace_period: 10
+  restart_policy: always
+  volumes:
+    docker-graph-storage: empty_dir
+    files-target: empty_dir
+    msp-config:
+      items:
+        msp.tar.gz: bundle
+      vol_id: ${config.service_name}-msp
+      vol_type: secret
+    tls-config:
+      items:
+        tls.tar.gz: bundle
+      vol_id: ${config.service_name}-tls
+      vol_type: secret
+    config:
+      items:
+        core.yaml: file
+      vol_id: core-yaml
+      vol_type: config-map

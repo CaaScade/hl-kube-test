@@ -1,0 +1,17 @@
+params:
+- namespace: k8s namespace
+- config: configuration for the peer
+  default:
+    name: peer0
+    org: org1
+    service_name: peer0-org1
+service:
+  namespace: ${namespace}
+  name: ${config.service_name}
+  selector:
+    app: ${config.service_name}
+  ports:
+  - 7050: 7050
+  - 7051: 7051
+  - 7052: 7052
+  - 7053: 7053

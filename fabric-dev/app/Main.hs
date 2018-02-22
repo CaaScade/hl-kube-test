@@ -1,7 +1,5 @@
-{-# LANGUAGE ExtendedDefaultRules #-}
 {-# LANGUAGE NoImplicitPrelude    #-}
 {-# LANGUAGE OverloadedStrings    #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module Main where
 
@@ -11,27 +9,49 @@ import qualified Data.Text as T
 import           Shelly
 import qualified Shelly as SH
 
-{-
-This program expects the following directory structure and files:
-root:
-  bin:
-    cryptogen
-  config:
-    crypto-config.yaml
--}
-
 main :: IO ()
 main = shelly . verbosely $ do
   buildConfig root channelID
   bundleConfig root
+  deployWorkload root
   where root = "/home/kynan/workspace/go/src/github.com/koki/fabric-dev/fabric-dev/testroot"
         channelID = "blubc"
+
+deployWorkload :: SH.FilePath -> Sh ()
+deployWorkload root = do
+  cd root
+  catchany_sh (rm_rf "./kube-config") (const $ return ())
+  mkdir_p "./kube-config"
+  sequence_ $ deleteKube "deployment" <$> peerKubeNames
+  sequence_ $ deleteKube "service" <$> peerKubeNames
+  deleteKube "deployment" "admin-peer0-org1-cli"
+  deleteKube "deployment" "orderer-example-com"
+  deleteKube "service" "orderer"
+  deployShort "./short-config/orderer.short.yaml" "./kube-config/orderer.kube.yaml"
+  deployShort "./short-config/peers.short.yaml" "./kube-config/peers.kube.yaml"
+  deployShort "./short-config/clis.short.yaml" "./kube-config/clis.kube.yaml"
+  where
+    deleteKube resource name =
+      catchany_sh
+        (run_ "kubectl" ["delete", resource, name])
+        (const $ return ())
+    createKube file =
+      run_ "kubectl" ["create", "-f", file]
+    unshort file output = do
+      kubed <- run "short" ["-k", "-f", file]
+      writefile output kubed
+    deployShort file output = do
+      unshort file output
+      createKube =<< toTextWarn output
+    peerKubeName peer org = peer <> "-" <> org
+    peerKubeNames = peerKubeName <$> ["peer0", "peer1"] <*> ["org1", "org2"]
 
 buildConfig :: SH.FilePath -> Text -> Sh ()
 buildConfig root channelID = do
   prependToPath $ root <> "bin"
   cd root
-  rm_rf "./crypto-config"
+  catchany_sh (rm_rf "./crypto-config") (const $ return ())
+  catchany_sh (rm_rf "./channel-artifacts") (const $ return ())
   -- Write crypto-config into the config directory because configtxgen can only look there.
   run_ "cryptogen" ["generate", "--config=./config/crypto-config.yaml", "--output=./config/crypto-config"]
   mkdir_p "./channel-artifacts"

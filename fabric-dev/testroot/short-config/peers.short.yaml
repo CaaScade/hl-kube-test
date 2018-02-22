@@ -1,0 +1,63 @@
+imports:
+- config: ./config/peer0-org1.config.yaml
+- service: ./peer.service.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+service: ${service}
+---
+imports:
+- config: ./config/peer0-org1.config.yaml
+- deployment: ./peer.deployment.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+deployment: ${deployment}
+---
+imports:
+- config: ./config/peer1-org1.config.yaml
+- service: ./peer.service.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+service: ${service}
+---
+imports:
+- config: ./config/peer1-org1.config.yaml
+- deployment: ./peer.deployment.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+deployment: ${deployment}
+---
+imports:
+- config: ./config/peer0-org2.config.yaml
+- service: ./peer.service.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+service: ${service}
+---
+imports:
+- config: ./config/peer0-org2.config.yaml
+- deployment: ./peer.deployment.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+deployment: ${deployment}
+---
+imports:
+- config: ./config/peer1-org2.config.yaml
+- service: ./peer.service.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+service: ${service}
+---
+imports:
+- config: ./config/peer1-org2.config.yaml
+- deployment: ./peer.deployment.short.yaml
+  params:
+    namespace: hltest
+    config: ${config}
+deployment: ${deployment}
