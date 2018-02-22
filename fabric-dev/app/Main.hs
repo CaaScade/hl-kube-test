@@ -10,6 +10,7 @@ import           Options
 import           Options.Applicative
 import           Shelly
 import qualified Shelly              as SH
+import System.Directory (getHomeDirectory)
 
 testOptions :: Options
 testOptions =
@@ -21,14 +22,17 @@ testOptions =
   }
 
 main :: IO ()
-main = handleCommand =<< execParser opts
-  where
-    opts =
-      info
-        (helper <*> parseCommand)
-        (fullDesc <>
-         progDesc "manage a development installation of Hyperledger Fabric" <>
-         header "koki fabric-dev - run Hyperledger Fabric on Kubernetes")
+main = do
+  defaultRoot <- shelly . verbosely $ (toTextWarn =<< pwd)
+  home <- getHomeDirectory
+  defaultKubeconfig <- shelly . verbosely $ toTextWarn $ fromText (pack home) <> ".kube/config"
+  let opts =
+        info
+          (helper <*> parseCommand defaultRoot defaultKubeconfig)
+          (fullDesc <>
+           progDesc "manage a development installation of Hyperledger Fabric" <>
+           header "koki fabric-dev - run Hyperledger Fabric on Kubernetes")
+  handleCommand =<< execParser opts
 
 handleCommand :: Command -> IO ()
 handleCommand (CleanCommand options) = shelly . verbosely $ doClean options
@@ -85,8 +89,6 @@ deployWorkload options = do
       createKube =<< toTextWarn output
     peerKubeName peer org = peer <> "-" <> org
     peerKubeNames = peerKubeName <$> ["peer0", "peer1"] <*> ["org1", "org2"]
-
--- TODO: Protect better against logic problems when root is "."
 
 buildConfig :: Options -> Sh ()
 buildConfig options = do

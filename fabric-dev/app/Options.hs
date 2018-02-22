@@ -16,8 +16,8 @@ data Options = Options
 
 data Command = CleanCommand Options | StartCommand Options
 
-parseOptions :: Parser Options
-parseOptions =
+parseOptions :: Text -> Text -> Parser Options
+parseOptions defaultRoot defaultKubeconfig =
   Options <$> parseRoot <*> parseKubeconfig <*> parseNamespace <*> parseChannel
   where
     parseRoot =
@@ -27,14 +27,14 @@ parseOptions =
          help "root directory containing bin/, config/, short-config/" <>
          metavar "ROOT_DIRECTORY" <>
          showDefault <>
-         value ".")
+         value defaultRoot)
     parseKubeconfig =
       option
         str
         (long "kubeconfig" <> help "kubernetes config file" <>
          metavar "KUBE_CONFIG" <>
          showDefault <>
-         value "~/.kube/config")
+         value defaultKubeconfig)
     parseNamespace =
       option
         str
@@ -50,7 +50,8 @@ parseOptions =
          showDefault <>
          value "samplechannel")
 
-parseCommand :: Parser Command
-parseCommand = hsubparser (command "clean" cleanInfo <> command "start" startInfo)
-  where cleanInfo = info (CleanCommand <$> parseOptions) (progDesc "clean up the development installation of Fabric")
-        startInfo = info (StartCommand <$> parseOptions) (progDesc "start a development installation of Fabric")
+parseCommand :: Text -> Text -> Parser Command
+parseCommand defaultRoot defaultKubeconfig = hsubparser (command "clean" cleanInfo <> command "start" startInfo)
+  where cleanInfo = info (CleanCommand <$> optParser) (progDesc "clean up the development installation of Fabric")
+        startInfo = info (StartCommand <$> optParser) (progDesc "start a development installation of Fabric")
+        optParser = parseOptions defaultRoot defaultKubeconfig
