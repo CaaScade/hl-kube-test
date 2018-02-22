@@ -1,42 +1,82 @@
-{-# LANGUAGE NoImplicitPrelude    #-}
-{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import           Import
 
-import qualified Data.Text as T
+import qualified Data.Text           as T
+import           Options
+import           Options.Applicative
 import           Shelly
-import qualified Shelly as SH
+import qualified Shelly              as SH
+
+testOptions :: Options
+testOptions =
+  Options
+  { root = "/home/kynan/workspace/go/src/github.com/koki/fabric-dev/fabric-dev/testroot"
+  , kubeconfig = "/home/kynan/.kube/config"
+  , namespace = "hltest"
+  , channel = "blubc"
+  }
 
 main :: IO ()
-main = shelly . verbosely $ do
-  buildConfig root channelID
-  bundleConfig root
-  deployWorkload root
-  where root = "/home/kynan/workspace/go/src/github.com/koki/fabric-dev/fabric-dev/testroot"
-        channelID = "blubc"
+main = handleCommand =<< execParser opts
+  where
+    opts =
+      info
+        (helper <*> parseCommand)
+        (fullDesc <>
+         progDesc "manage a development installation of Hyperledger Fabric" <>
+         header "koki fabric-dev - run Hyperledger Fabric on Kubernetes")
 
-deployWorkload :: SH.FilePath -> Sh ()
-deployWorkload root = do
-  cd root
-  catchany_sh (rm_rf "./kube-config") (const $ return ())
+handleCommand :: Command -> IO ()
+handleCommand (CleanCommand options) = shelly . verbosely $ doClean options
+handleCommand (StartCommand options) = shelly . verbosely $ doStart options
+
+testClean = handleCommand $ CleanCommand testOptions
+testStart = handleCommand $ StartCommand testOptions
+
+doClean :: Options -> Sh ()
+doClean options =
+  ignoreFailure $
+  run_
+    "kubectl"
+    [ "--kubeconfig"
+    , kubeconfig options
+    , "delete"
+    , "namespace"
+    , namespace options
+    ]
+
+doStart :: Options -> Sh ()
+doStart options = do
+  kubectl options ["create", "namespace", namespace options]
+  buildConfig options
+  bundleConfig options
+  deployWorkload options
+
+kubectl :: Options -> [Text] -> Sh ()
+kubectl options args =
+  run_
+    "kubectl"
+    (["--kubeconfig", kubeconfig options, "--namespace", namespace options] <>
+     args)
+
+ignoreFailure :: Sh () -> Sh ()
+ignoreFailure action = catchany_sh action . const $ return ()
+
+deployWorkload :: Options -> Sh ()
+deployWorkload options = do
+  cd . fromText $ root options
+  ignoreFailure $ rm_rf "./kube-config"
   mkdir_p "./kube-config"
-  sequence_ $ deleteKube "deployment" <$> peerKubeNames
-  sequence_ $ deleteKube "service" <$> peerKubeNames
-  deleteKube "deployment" "admin-peer0-org1-cli"
-  deleteKube "deployment" "orderer-example-com"
-  deleteKube "service" "orderer"
   deployShort "./short-config/orderer.short.yaml" "./kube-config/orderer.kube.yaml"
   deployShort "./short-config/peers.short.yaml" "./kube-config/peers.kube.yaml"
   deployShort "./short-config/clis.short.yaml" "./kube-config/clis.kube.yaml"
   where
-    deleteKube resource name =
-      catchany_sh
-        (run_ "kubectl" ["delete", resource, name])
-        (const $ return ())
     createKube file =
-      run_ "kubectl" ["create", "-f", file]
+      kubectl options ["create", "-f", file]
     unshort file output = do
       kubed <- run "short" ["-k", "-f", file]
       writefile output kubed
@@ -46,10 +86,12 @@ deployWorkload root = do
     peerKubeName peer org = peer <> "-" <> org
     peerKubeNames = peerKubeName <$> ["peer0", "peer1"] <*> ["org1", "org2"]
 
-buildConfig :: SH.FilePath -> Text -> Sh ()
-buildConfig root channelID = do
-  prependToPath $ root <> "bin"
-  cd root
+-- TODO: Protect better against logic problems when root is "."
+
+buildConfig :: Options -> Sh ()
+buildConfig options = do
+  prependToPath $ rootDir <> "bin"
+  cd rootDir
   catchany_sh (rm_rf "./crypto-config") (const $ return ())
   catchany_sh (rm_rf "./channel-artifacts") (const $ return ())
   -- Write crypto-config into the config directory because configtxgen can only look there.
@@ -62,17 +104,18 @@ buildConfig root channelID = do
   run_ "configtxgen" ["-profile", "TwoOrgsChannel", "-outputAnchorPeersUpdate", "./channel-artifacts/Org1MSPanchors.tx", "-channelID", channelID, "-asOrg", "Org1MSP"]
   run_ "configtxgen" ["-profile", "TwoOrgsChannel", "-outputAnchorPeersUpdate", "./channel-artifacts/Org2MSPanchors.tx", "-channelID", channelID, "-asOrg", "Org2MSP"]
   -- Put the crypto-config where it belongs.
-  mv "config/crypto-config" root
+  mv "config/crypto-config" rootDir
+  where rootDir = fromText $ root options
+        channelID = channel options
 
 -- NOTE: *SecretName functions need to ensure lowercase & no periods
--- TODO: k8s namespace
-bundleConfig :: SH.FilePath -> Sh ()
-bundleConfig root = do
+bundleConfig :: Options -> Sh ()
+bundleConfig options = do
   let peerOrgs = ["org1", "org2"]
       peerPeers = ["peer0", "peer1"]
       peerUsers = ["Admin", "User1"]
       folders = ["msp", "tls"]
-  cd root
+  cd . fromText $ root options
   mkdir_p "config-artifacts"
   sequence_ $ bundlePeer <$> peerPeers <*> peerOrgs <*> folders
   sequence_ $ bundleOrderer <$> folders
@@ -127,13 +170,9 @@ bundleConfig root = do
     userSecretName user org folder =
       T.intercalate "-" [T.toLower user, org, folder]
     deploySecret name file key = do
-      let delete = run_ "kubectl" ["delete", "secret", name]
-          options = T.intercalate "=" ["--from-file", key, file]
-      catchany_sh delete (const $ return ())
-      run_ "kubectl" ["create", "secret", "generic", name, options]
+      let fileOptions = T.intercalate "=" ["--from-file", key, file]
+      kubectl options ["create", "secret", "generic", name, fileOptions]
     deployConfigMap name file key = do
-      let delete = run_ "kubectl" ["delete", "configmap", name]
-          options = T.intercalate "=" ["--from-file", key, file]
-      catchany_sh delete (const $ return ())
-      run_ "kubectl" ["create", "configmap", name, options]
+      let fileOptions = T.intercalate "=" ["--from-file", key, file]
+      kubectl options ["create", "configmap", name, fileOptions]
     inOutputFolder file = "config-artifacts" <> "/" <> file
