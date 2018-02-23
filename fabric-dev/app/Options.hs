@@ -51,7 +51,15 @@ parseOptions defaultRoot defaultKubeconfig =
          value "samplechannel")
 
 parseCommand :: Text -> Text -> Parser Command
-parseCommand defaultRoot defaultKubeconfig = hsubparser (command "clean" cleanInfo <> command "start" startInfo)
-  where cleanInfo = info (CleanCommand <$> optParser) (progDesc "clean up the development installation of Fabric")
-        startInfo = info (StartCommand <$> optParser) (progDesc "start a development installation of Fabric")
-        optParser = parseOptions defaultRoot defaultKubeconfig
+parseCommand defaultRoot defaultKubeconfig =
+  hsubparser (command "clean" cleanInfo <> command "start" startInfo)
+  where
+    cleanInfo =
+      info
+        (CleanCommand <$> optParser)
+        (progDesc "clean up the development installation of Fabric")
+    startInfo =
+      info
+        (StartCommand <$> optParser)
+        (progDesc "start a development installation of Fabric")
+    optParser = parseOptions defaultRoot defaultKubeconfig

@@ -27,13 +27,12 @@ main :: IO ()
 main = do
   defaultRoot <- shelly . verbosely $ (toTextWarn =<< pwd)
   home <- getHomeDirectory
-  defaultKubeconfig <- shelly . verbosely $ toTextWarn $ fromText (pack home) <> ".kube/config"
+  defaultKubeconfig <-
+    shelly . verbosely $ toTextWarn $ fromText (pack home) <> ".kube/config"
   let opts =
         info
           (helper <*> parseCommand defaultRoot defaultKubeconfig)
-          (fullDesc <>
-           progDesc "manage a development installation of Hyperledger Fabric" <>
-           header "koki fabric-dev - run Hyperledger Fabric on Kubernetes")
+          (progDesc "manage a development installation of Hyperledger Fabric")
   handleCommand =<< execParser opts
 
 handleCommand :: Command -> IO ()
