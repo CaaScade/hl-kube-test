@@ -1,9 +1,9 @@
 .stack-work/
 fabric-dev.cabal
 *~
-testroot/channel-artifacts
-testroot/crypto-config
-testroot/config-artifacts
-testroot/kube-config
-testroot/short-config/*.config.yaml
+root/channel-artifacts
+root/crypto-config
+root/config-artifacts
+root/kube-config
+root/short-config/*.config.yaml
 TAGS

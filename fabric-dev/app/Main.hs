@@ -17,7 +17,7 @@ import           System.Directory    (getHomeDirectory)
 testOptions :: Options
 testOptions =
   Options
-  { root = "/home/kynan/workspace/go/src/github.com/koki/fabric-dev/fabric-dev/testroot"
+  { root = "/home/kynan/workspace/go/src/github.com/koki/fabric-dev/fabric-dev/root"
   , kubeconfig = "/home/kynan/.kube/config"
   , namespace = "hltest"
   , channel = "blubc"

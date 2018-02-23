@@ -1,10 +1,10 @@
 name:                fabric-dev
 version:             0.1.0.0
-github:              "githubuser/fabric-dev"
+github:              "koki/fabric-dev"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2018 Author name here"
+author:              "Kynan Rilee"
+maintainer:          "kynan@koki.io"
+copyright:           "2018 Koki Technology Inc"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on Github at <https://github.com/githubuser/fabric-dev#readme>
+description:         Please see the README on Github at <https://github.com/koki/fabric-dev#readme>
 
 dependencies:
 - aeson
