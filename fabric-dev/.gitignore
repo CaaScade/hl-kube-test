@@ -6,5 +6,6 @@ root/crypto-config
 root/config-artifacts
 root/kube-config
 root/short-config/*.config.yaml
-root/bin/fabric
+root/bin
+tmp
 TAGS

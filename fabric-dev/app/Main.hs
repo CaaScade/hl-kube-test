@@ -64,6 +64,7 @@ doClean options =
 
 doStart :: Options -> Sh ()
 doStart options = do
+  enterRoot options
   kubectl options ["create", "namespace", namespace options]
   buildConfig options
   bundleConfig options
@@ -79,9 +80,14 @@ kubectl options args =
 ignoreFailure :: Sh () -> Sh ()
 ignoreFailure action = catchany_sh action . const $ return ()
 
+enterRoot :: Options -> Sh ()
+enterRoot options = do
+  prependToPath $ rootDir <> "bin"
+  cd rootDir
+  where rootDir = fromText $ root options
+
 deployWorkload :: Options -> Sh ()
 deployWorkload options = do
-  cd . fromText $ root options
   ignoreFailure $ rm_rf "./kube-config"
   mkdir_p "./kube-config"
   sequence_ $ deployPeer options <$> ["peer0", "peer1"] <*> ["org1", "org2"]
@@ -126,8 +132,6 @@ deployCLI options user peer org = do
 
 buildConfig :: Options -> Sh ()
 buildConfig options = do
-  prependToPath $ rootDir <> "bin"
-  cd rootDir
   catchany_sh (rm_rf "./crypto-config") (const $ return ())
   catchany_sh (rm_rf "./channel-artifacts") (const $ return ())
   -- Write crypto-config into the config directory because configtxgen can only look there.
@@ -151,7 +155,6 @@ bundleConfig options = do
       peerPeers = ["peer0", "peer1"]
       peerUsers = ["Admin", "User1"]
       folders = ["msp", "tls"]
-  cd . fromText $ root options
   mkdir_p "config-artifacts"
   sequence_ $ bundlePeer <$> peerPeers <*> peerOrgs <*> folders
   sequence_ $ bundleOrderer <$> folders
