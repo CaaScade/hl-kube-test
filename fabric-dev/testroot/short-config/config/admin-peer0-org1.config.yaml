@@ -1,7 +1,0 @@
-config:
-  user: Admin
-  peer: peer0
-  org: org1
-  peer_service_name: peer0-org1
-  admin_service_name: admin-org1
-  client_service_name: admin-peer0-org1-cli

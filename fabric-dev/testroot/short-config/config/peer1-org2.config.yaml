@@ -1,4 +1,0 @@
-config:
-  name: peer1
-  org: org2
-  service_name: peer1-org2

@@ -1,7 +1,7 @@
 params:
-- namespace: k8s namespace
-- config: configuration for the peer
+- config: configuration for the cli
   default:
+    namespace: fabric-dev
     user: Admin
     peer: peer0
     org: org1
@@ -9,7 +9,7 @@ params:
     admin_service_name: admin-org1
     client_service_name: admin-peer0-org1-cli
 deployment:
-  namespace: ${namespace}
+  namespace: ${config.namespace}
   name: ${config.client_service_name}
   replicas: 1
   selector:

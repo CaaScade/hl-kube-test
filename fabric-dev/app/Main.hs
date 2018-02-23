@@ -6,11 +6,13 @@ module Main where
 import           Import
 
 import qualified Data.Text           as T
+import qualified Data.Yaml           as Y
 import           Options
 import           Options.Applicative
 import           Shelly
 import qualified Shelly              as SH
-import System.Directory (getHomeDirectory)
+import           ShortConfig
+import           System.Directory    (getHomeDirectory)
 
 testOptions :: Options
 testOptions =
@@ -35,8 +37,16 @@ main = do
   handleCommand =<< execParser opts
 
 handleCommand :: Command -> IO ()
-handleCommand (CleanCommand options) = shelly . verbosely $ doClean options
-handleCommand (StartCommand options) = shelly . verbosely $ doStart options
+handleCommand (CleanCommand options) =
+  shelly . verbosely $ (doClean =<< processOptions options)
+handleCommand (StartCommand options) =
+  shelly . verbosely $ (doStart =<< processOptions options)
+
+processOptions :: Options -> Sh Options
+processOptions options = do
+  root' <- toTextWarn =<< absPath (fromText $ root options)
+  kubeconfig' <- toTextWarn =<< absPath (fromText $ kubeconfig options)
+  return options {root = root', kubeconfig = kubeconfig'}
 
 testClean = handleCommand $ CleanCommand testOptions
 testStart = handleCommand $ StartCommand testOptions
@@ -75,20 +85,45 @@ deployWorkload options = do
   cd . fromText $ root options
   ignoreFailure $ rm_rf "./kube-config"
   mkdir_p "./kube-config"
-  deployShort "./short-config/orderer.short.yaml" "./kube-config/orderer.kube.yaml"
-  deployShort "./short-config/peers.short.yaml" "./kube-config/peers.kube.yaml"
-  deployShort "./short-config/clis.short.yaml" "./kube-config/clis.kube.yaml"
+  sequence_ $ deployPeer options <$> ["peer0", "peer1"] <*> ["org1", "org2"]
+  deployOrderer options
+  deployCLI options "Admin" "peer0" "org1"
+
+unshort file output = do
+  kubed <- run "short" ["-k", "-f", file]
+  writefile output kubed
+
+writeConfig file config = do
+  touchfile file
+  absFile <- absPath file
+  file' <- unpack <$> toTextWarn absFile
+  liftIO $ Y.encodeFile file' config
+
+deployPeer :: Options -> Text -> Text -> Sh ()
+deployPeer options peer org = do
+  writeConfig "./short-config/peer.config.yaml" config
+  unshort "./short-config/peer.short.yaml" "./kube-config/peer.kube.yaml"
+  kubectl options ["create", "-f", "./kube-config/peer.kube.yaml"]
   where
-    createKube file =
-      kubectl options ["create", "-f", file]
-    unshort file output = do
-      kubed <- run "short" ["-k", "-f", file]
-      writefile output kubed
-    deployShort file output = do
-      unshort file output
-      createKube =<< toTextWarn output
-    peerKubeName peer org = peer <> "-" <> org
-    peerKubeNames = peerKubeName <$> ["peer0", "peer1"] <*> ["org1", "org2"]
+    serviceName = peer <> "-" <> org
+    config = ConfigWrapper $ mkPeerConfig (namespace options) peer org
+
+deployOrderer :: Options -> Sh ()
+deployOrderer options = do
+  writeConfig "./short-config/orderer.config.yaml" config
+  unshort "./short-config/orderer.short.yaml" "./kube-config/orderer.kube.yaml"
+  kubectl options ["create", "-f", "./kube-config/orderer.kube.yaml"]
+  where
+    config = ConfigWrapper $ mkOrdererConfig (namespace options)
+
+deployCLI :: Options -> Text -> Text -> Text -> Sh ()
+deployCLI options user peer org = do
+  writeConfig "./short-config/cli.config.yaml" config
+  unshort "./short-config/cli.short.yaml" "./kube-config/cli.kube.yaml"
+  kubectl options ["create", "-f", "./kube-config/cli.kube.yaml"]
+  where
+    serviceName = user <> "-" <> peer <> "-" <> org
+    config = ConfigWrapper $ mkCLIConfig (namespace options) user peer org
 
 buildConfig :: Options -> Sh ()
 buildConfig options = do

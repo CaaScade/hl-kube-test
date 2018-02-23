@@ -5,3 +5,5 @@ testroot/channel-artifacts
 testroot/crypto-config
 testroot/config-artifacts
 testroot/kube-config
+testroot/short-config/*.config.yaml
+TAGS

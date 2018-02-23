@@ -1,0 +1,11 @@
+params:
+- config: configuration for the orderer
+  default:
+    namespace: fabric-dev
+service:
+  namespace: ${config.namespace}
+  name: orderer
+  selector:
+    app: orderer-example-com
+  ports:
+  - 7050: 7050

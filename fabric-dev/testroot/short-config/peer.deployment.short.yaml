@@ -1,12 +1,12 @@
 params:
-- namespace: k8s namespace
 - config: configuration for the peer
   default:
+    namespace: fabric-dev
     name: peer0
     org: org1
     service_name: peer0-org1
 deployment:
-  namespace: ${namespace}
+  namespace: ${config.namespace}
   name: ${config.service_name}
   replicas: 1
   selector:

@@ -1,90 +1,13 @@
-service:
-  namespace: hltest
-  name: orderer
-  selector:
-    app: orderer-example-com
-  ports:
-  - 7050: 7050
+imports:
+- config: ./orderer.config.yaml
+- service: ./orderer.service.short.yaml
+  params:
+    config: ${config}
+service: ${service}
 ---
-deployment:
-  namespace: hltest
-  name: orderer-example-com
-  replicas: 1
-  selector:
-    app: orderer-example-com
-  containers:
-  - name: orderer
-    image: hyperledger/fabric-orderer:x86_64-1.0.5
-    env:
-    - ORDERER_GENERAL_LOGLEVEL=debug
-    - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-    - ORDERER_GENERAL_GENESISMETHOD=file
-    - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
-    - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
-    - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
-    # enabled TLS
-    - ORDERER_GENERAL_TLS_ENABLED=false
-    - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
-    - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
-    - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
-    wd: /opt/gopath/src/github.com/hyperledger/fabric
-    command:
-    - orderer
-    expose:
-    - 7050
-    volume:
-    - mount: /var/hyperledger/orderer
-      store: files-target
-    - mount: /etc/hyperledger/fabric
-      store: config
-  init_containers:
-  - name: tar
-    image: ubuntu:16.04
-    command:
-    - sh
-    - -c
-    - |
-      set -e
-      set -x
-      cd /target
-      cp -Lr /genesis-source/* .
-      tar -xvf /msp-source/msp.tar.gz
-      tar -xvf /tls-source/tls.tar.gz
-      find /target
-    volume:
-    - mount: /target
-      store: files-target
-    - mount: /msp-source
-      store: msp-config
-    - mount: /tls-source
-      store: tls-config
-    - mount: /genesis-source
-      store: genesis
-  termination_grace_period: 10
-  restart_policy: always
-  volumes:
-    files-target: empty_dir
-    msp-config:
-      items:
-        msp.tar.gz: bundle
-      vol_id: orderer-example-com-msp
-      vol_type: secret
-    tls-config:
-      items:
-        tls.tar.gz: bundle
-      vol_id: orderer-example-com-tls
-      vol_type: secret
-    genesis:
-      items:
-        orderer.genesis.block: file
-      vol_id: orderer-genesis-block
-      vol_type: secret
-    config:
-      vol_type: projected
-      sources:
-      - config: core-yaml
-        items:
-          core.yaml: file
-      - config: orderer-yaml
-        items:
-          orderer.yaml: file
+imports:
+- config: ./orderer.config.yaml
+- deployment: ./orderer.deployment.short.yaml
+  params:
+    config: ${config}
+deployment: ${deployment}

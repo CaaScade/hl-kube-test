@@ -1,0 +1,13 @@
+imports:
+- config: ./peer.config.yaml
+- service: ./peer.service.short.yaml
+  params:
+    config: ${config}
+service: ${service}
+---
+imports:
+- config: ./peer.config.yaml
+- deployment: ./peer.deployment.short.yaml
+  params:
+    config: ${config}
+deployment: ${deployment}
